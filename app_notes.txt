@@ -1,0 +1,52 @@
+Asset class:
+	object attributes:
+		 - price history for given in put file csv time span
+		 		- Version 1: returns price history for a T-Day slice
+		 		- Version 2: returns complete price history for all days in span
+		 				- this accommodates desire for slice-able dataframes..
+		 				- will not have to compute returns in loops for different loops, just slice... maybe inefficient becasuse need for copying slices to ensure no accidental dataframe assignment and broadcasting
+		 		-TODO: Date scraping function for data from CSV and crypto asset price source. 
+		 		-TODO: Operator overloading for asset object data frames slicing for it to only return a copy so accidental assignments dont broadcast 
+
+	object methods:
+		- return: price history slices
+		- return: return histories
+		- return: mean-variance statistics 
+		 - option to slice histories of a time span 
+
+
+
+Portfolio Class:
+	object attributes:
+		- N asset price histories 
+		- N asset return histories
+	on
+
+
+
+
+N 
+
+
+how to divide asset and portfolio metrics into time frames:
+	- upon initialization -> would be static
+	- dynamically: 	-> using slices of time span and then recalibrating 
+			- requires upon initialization to ask for how many years of price history to consider...
+
+	- array operations on entire price and return history?
+		- keep const index values for TD-ing days per year 
+			- SLOWER
+		- loop through data frames and copy a slice 
+			- wont broadcast 
+
+
+
+TODO ALL:
+
+-TODO: Date scraping function for data from CSV and crypto asset price source. 
+-TODO: Operator overloading for asset object data frames slicing for it to only return a copy so accidental assignments dont broadcast 
+-TODO: asset ticker naming... how to abstract naming asset objects and then passing them into a portfolio class initialization 
+		- doing this forces portfolio class instances to have previously intiialized asset class instances. 
+		- happens on the backend.. shouldnt matter to user
+		
+

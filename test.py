@@ -17,10 +17,11 @@ trading_day_indices = [[0, 252],[253, 505]] """
 VFINX = port.Asset("VFINX","VFINX_03_17.csv")
 
 
-#VFINX.price_history_plot()
-#print(VFINX.price_history.head())
-return_func = VFINX.return_history([0,252])
+#Data Format Check: VFINX.price_history_plot()
+#Data Format Check: print(VFINX.price_history.head())
+# Version 2 test:  return_func = VFINX.return_history([0,252])
 
+""" Speed tests for V1 and V2 of tested funcs
 start_time = timeit.default_timer()
 VFINX.return_history([0,len(VFINX.price_history)-1])
 elapsed = timeit.default_timer()-start_time
@@ -31,6 +32,15 @@ VFINX.price_history.pct_change()
 elapsed = timeit.default_timer()-start_time
 print("time for pandas function: ",elapsed)
 
-print(type(VFINX.price_history))
+"""
+
+print(VFINX.return_history().head())
+print(len(VFINX.return_history()))
+VFINX.price_history_plot()
+
+
+
+
+
 
 
