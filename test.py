@@ -45,7 +45,7 @@ print(len(VFINX.return_history()))
 #VFINX.price_history_plot()
 
 
-portfolio = port.Portfolio(VFINX, VBTIX, VGSLX, VFSTX, VFICX, VWIGX)
+portfolio = port.Portfolio(VFINX, VBTIX, VGSLX, VFSTX, VFICX)
 
 print(portfolio.return_hist.shape) 
 

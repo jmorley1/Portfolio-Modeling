@@ -16,6 +16,7 @@ class Asset:
         self.return_hist = self.return_history()
 
 
+
     def load_daily_adj_close(self, file_name):
         """ Input:  Yahoo Finance CSV data. 5th column is daily adjusted close.adjusted
         Output: Price history data frame """
@@ -66,7 +67,6 @@ class Asset:
         plt.show()
 
 
-
 class Portfolio():
     def __init__(self, *N_assets):
         self.return_hist = pd.DataFrame([asset.return_hist['Arithmetic Return'].values for asset in  N_assets],
@@ -74,4 +74,4 @@ class Portfolio():
                                         columns=N_assets[0].return_hist['Arithmetic Return'].index.values).T
         self.price_hist = pd.DataFrame([asset.price_hist['Adj Close'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
-                                        columns=N_assets[0].price_hist['Adj Close'].index.values).T
+                                        columns=N_assets[0].price_hist['Adj Close'].index.values).T 

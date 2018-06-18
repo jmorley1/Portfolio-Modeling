@@ -1,0 +1,16 @@
+API SOURCE:  https://min-api.cryptocompare.com/
+
+Use of this API allows for more dynamic and flexible asset history functionality
+
+
+Asset Class:
+	INIT:
+	ATTRS:
+	FUNCS:
+
+
+
+
+TODO:
+	- usr input selected time span and  to calibrate models
+	- usr input trading periods upon which to calibrate models: daily, hourly, weekly..
