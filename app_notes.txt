@@ -7,6 +7,8 @@ Asset class:
 		 				- will not have to compute returns in loops for different loops, just slice... maybe inefficient becasuse need for copying slices to ensure no accidental dataframe assignment and broadcasting
 		 		-TODO: Date scraping function for data from CSV and crypto asset price source. 
 		 		-TODO: Operator overloading for asset object data frames slicing for it to only return a copy so accidental assignments dont broadcast 
+		 - Retrun history:
+		 		- for the whole period in the input data
 
 	object methods:
 		- return: price history slices
@@ -20,12 +22,9 @@ Portfolio Class:
 	object attributes:
 		- N asset price histories 
 		- N asset return histories
-	on
+	
 
 
-
-
-N 
 
 
 how to divide asset and portfolio metrics into time frames:
@@ -48,5 +47,5 @@ TODO ALL:
 -TODO: asset ticker naming... how to abstract naming asset objects and then passing them into a portfolio class initialization 
 		- doing this forces portfolio class instances to have previously intiialized asset class instances. 
 		- happens on the backend.. shouldnt matter to user
-		
+
 

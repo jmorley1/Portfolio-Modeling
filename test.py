@@ -15,7 +15,11 @@ print(price_hist.head())
 
 trading_day_indices = [[0, 252],[253, 505]] """
 VFINX = port.Asset("VFINX","VFINX_03_17.csv")
-
+VBTIX = port.Asset("VBTIX","VBTIX_03_17.csv")
+VGSLX = port.Asset("VGSLX","VGSLX_03_17.csv")
+VFSTX = port.Asset("VFSTX","VFSTX_03_17.csv")
+VFICX = port.Asset("VFICX","VFICX_03_17.csv")
+VWIGX = port.Asset("VWIGX","VWIGX_03_17.csv")
 
 #Data Format Check: VFINX.price_history_plot()
 #Data Format Check: print(VFINX.price_history.head())
@@ -35,12 +39,17 @@ print("time for pandas function: ",elapsed)
 """
 
 print(VFINX.return_history().head())
+print(VFINX.return_history().tail())
+
 print(len(VFINX.return_history()))
-VFINX.price_history_plot()
+#VFINX.price_history_plot()
 
 
+portfolio = port.Portfolio(VFINX, VBTIX, VGSLX, VFSTX, VFICX, VWIGX)
 
+print(portfolio.return_hist.shape) 
 
-
-
-
+print("Portfolio return history")
+print(portfolio.return_hist.head())
+print("Portfolio price history")
+print(portfolio.price_hist.head())
