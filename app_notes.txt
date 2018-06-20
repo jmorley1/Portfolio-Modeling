@@ -49,3 +49,14 @@ TODO ALL:
 		- happens on the backend.. shouldnt matter to user
 
 
+NOTE:
+	- slicing by date might be un-natural because pepole dont know the trading day dates
+		- can do a search to start at beginning of a time frame
+		- will mean much more time spent on date parsing... ehhh
+			- for MVP cache dates and calibrate on the yearly 
+
+
+
+- USER MUST KNOW/INPUT THE YEARS FOR WHICH THE PRICE DATA IS TAKEN]
+		- THE __INIT__() ASSIGNMENT FOR PORTFOLIO CLASS'S YEARS ATTR LOOKS AT THE SET OF YEARS IN THE PRICE HISTORY 
+

@@ -22,7 +22,7 @@ class Asset:
         Output: Price history data frame """
         df = pd.read_csv(file_name,usecols=[5])
         dates = []
-        temp = pd.read_csv("VFINX_03_17.csv",usecols=[0]).values.tolist()
+        temp = pd.read_csv(file_name,usecols=[0]).values.tolist()
         for i in range(len(temp)):
             dates.append(temp[i][0])
         dates = [dt.strptime(x,'%Y-%m-%d') for x in dates]
@@ -68,10 +68,14 @@ class Asset:
 
 
 class Portfolio():
-    def __init__(self, *N_assets):
+    def __init__(self, *N_assets, ):
+    	# first arg catches comma separated asset objects, 
         self.return_hist = pd.DataFrame([asset.return_hist['Arithmetic Return'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
                                         columns=N_assets[0].return_hist['Arithmetic Return'].index.values).T
         self.price_hist = pd.DataFrame([asset.price_hist['Adj Close'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
                                         columns=N_assets[0].price_hist['Adj Close'].index.values).T 
+        self.years = set([self.price_hist.index[i].year for i in range(len(self.price_hist))])
+        
+        

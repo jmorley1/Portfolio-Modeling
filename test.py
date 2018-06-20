@@ -53,3 +53,5 @@ print("Portfolio return history")
 print(portfolio.return_hist.head())
 print("Portfolio price history")
 print(portfolio.price_hist.head())
+
+print(portfolio.years)
