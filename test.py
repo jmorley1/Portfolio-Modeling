@@ -38,20 +38,20 @@ print("time for pandas function: ",elapsed)
 
 """
 
-print(VFINX.return_history().head())
-print(VFINX.return_history().tail())
+#print(VFINX.return_history().head())
+#print(VFINX.return_history().tail())
 
-print(len(VFINX.return_history()))
+#print(len(VFINX.return_history()))
 #VFINX.price_history_plot()
 
 
-portfolio = port.Portfolio(VFINX, VBTIX, VGSLX, VFSTX, VFICX)
+portfolio = port.Portfolio(VFINX, VBTIX, VGSLX, VFSTX, VFICX, VWIGX)
 
-print(portfolio.return_hist.shape) 
+#print(portfolio.return_hist.shape) 
 
 print("Portfolio return history")
-print(portfolio.return_hist.head())
-print("Portfolio price history")
-print(portfolio.price_hist.head())
+print(portfolio.return_hist.head(),'\n')
+#print("Portfolio price history")
+#print(portfolio.price_hist.head())
 
-print(portfolio.years)
+print(len(portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]))

@@ -76,6 +76,15 @@ class Portfolio():
         self.price_hist = pd.DataFrame([asset.price_hist['Adj Close'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
                                         columns=N_assets[0].price_hist['Adj Close'].index.values).T 
-        self.years = set([self.price_hist.index[i].year for i in range(len(self.price_hist))])
-        
-        
+        self.years = sorted(list(set([self.price_hist.index[i].year for i in range(len(self.price_hist))])))
+        self.assets  = [asset.name for asset in N_assets]
+        self.return_hist_struct =  pd.DataFrame([[ self.return_hist[asset][ self.return_hist.index.year == year].values] for asset in self.assets for year in self.years ],
+             							index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
+             							columns=["Return History"],
+             							dtype='float64').sort_index(level=0)
+        	# returns dtype: "object"... must unpack when referencing an asset and year by ["Return History"]
+        	# EX: portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]
+        	# Needed b/c trading days per year may be different.. will get Nan or error.. skipping catch for now
+
+
+
