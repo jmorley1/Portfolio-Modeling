@@ -55,3 +55,8 @@ print(portfolio.return_hist.head(),'\n')
 #print(portfolio.price_hist.head())
 
 print(len(portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]))
+
+print(portfolio.price_hist_struct.head())
+
+print(portfolio.return_mean_struct)
+

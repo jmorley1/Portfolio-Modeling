@@ -86,5 +86,15 @@ class Portfolio():
         	# EX: portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]
         	# Needed b/c trading days per year may be different.. will get Nan or error.. skipping catch for now
 
-
-
+        self.price_hist_struct =  pd.DataFrame([[ self.price_hist[asset][ self.price_hist.index.year == year].values] for asset in self.assets for year in self.years ],
+             							index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
+             							columns=["Price History"],
+             							dtype='float64').sort_index(level=0)
+        	#EX: portfolio.price_hist_struct.loc["VINFX",2003]["Price History"]
+        self.return_mean_struct = pd.DataFrame([[ np.mean(self.return_hist[asset][ self.return_hist.index.year == year].values)] for asset in self.assets for year in self.years ],
+                                        index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
+                                        columns=["Return Mean"],
+                                        dtype='float64').dropna().sort_index(level=0)
+        # Drop the Nan columns for the year index with one input
+        	# in the return struct the zero day year should be deleted. 
+       	self.covariance( )
