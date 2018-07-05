@@ -49,14 +49,128 @@ portfolio = port.Portfolio(VFINX, VBTIX, VGSLX, VFSTX, VFICX, VWIGX)
 
 #print(portfolio.return_hist.shape) 
 
-print("Portfolio return history")
-print(portfolio.return_hist.head(),'\n')
+#print("Portfolio return history")
+#print(portfolio.return_hist.head(),'\n')
 #print("Portfolio price history")
 #print(portfolio.price_hist.head())
 
-print(len(portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]))
+#print(len(portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]))
 
-print(portfolio.price_hist_struct.head())
+#print(portfolio.price_hist_struct.head())
 
-print(portfolio.return_mean_struct)
+#print(portfolio.return_mean_struct)
+#test = portfolio.return_hist
+#print(portfolio.return_hist["VFINX"][portfolio.return_hist["VFINX"].index])
+#print(portfolio.return_hist.index.year)
+'''
 
+price
+
+300 mionthly 
+3600 *3 years
+
+5000 painting
+
+
+~ 20,000 grand.. condition 
+
+tax deduct 18,000 taxes....__class__
+
+
+avg rate 5%....  5-3%...... 7 years... 
+
+560,0000
+
+'''
+
+
+#print(portfolio.return_hist_struct.loc["VFINX",2003]['Return History'].shape)
+
+#print(len(np.array([portfolio.return_hist_struct.loc[asset, year]['Return History'] for asset in portfolio.assets for year in portfolio.years[1:]])[0]))
+
+#print(portfolio.years)
+#print(len(portfolio.years))
+#print([portfolio.retunr_hist_struct])
+#print(len(portfolio.assets))
+
+#print(portfolio.years)
+#print(len(portfolio.years[1:]))
+"""
+yearly_portfolio = {}
+for asset in portfolio.assets:
+	for year in portfolio.years[1:]:
+		print(portfolio.return_hist_struct.loc[asset,year]['Return History'])
+"""
+yearly_portfolio = {}
+for year in portfolio.years[1:]:
+	port_arr = []
+	print(year)
+	for asset in portfolio.assets:
+		port_arr.append( portfolio.return_hist_struct.loc[asset,year]['Return History'])
+		print(asset)
+	yearly_portfolio[year] = port_arr
+
+
+print('Year return hist for portfolio for different years')
+print(yearly_portfolio.keys())
+
+#print(portfolio.return_hist_struct.loc["VFINX"].index)
+#print(len([portfolio.return_hist_struct.loc[asset,year] for year in portfolio.years if asset in portfolio.assets ]))
+
+print(len(yearly_portfolio[2006][0]))
+
+print(portfolio.return_hist_struct.index)
+
+print(portfolio.assets)
+
+#temp_cov = pd.DataFrame(yearly_portfolio)
+#print(temp_cov.index
+print(np.array(yearly_portfolio[2003]).shape)
+port_list = []
+for key in yearly_portfolio.keys():
+	temp = np.array(yearly_portfolio[key])
+	port_list.append(temp)
+
+print('list of 6 by num trading day matrices')
+print(type(port_list))
+print(len(port_list))
+
+temp1 = pd.DataFrame(port_list)
+print(temp1)
+print('break')
+print(temp1.iloc[0][0])
+print(temp1.iloc[0][0].shape)
+
+
+print(temp1.iloc[2].shape)
+
+print(len(temp1))
+print(type(temp1))
+print(temp1)
+
+print('inside')
+#print(len(temp1.iloc[0]))
+print(len(temp1.iloc[0][0][0]))
+#print(len(temp1.iloc[0][0]))
+
+# Verify equivalency
+#print(temp1.iloc[0][0][0][:5])
+#print(portfolio.return_hist_struct.loc["VFINX",2003]['Return History'][:5])
+
+temp2 = portfolio.yearly_portfolio_struct()
+
+print( len(temp2.iloc[0][0][:]))
+print( type(temp2.iloc[0][0][:]))
+print( temp2.iloc[0][0][:].shape) # confirm proper shape (6,252) for np.cov()
+print(temp2.index)
+print(np.cov(temp2.loc[2003][0][:]).shape)
+#print(np.cov(temp2.loc[2003][0][:])[0][0])
+
+print('\n\n\n\n')
+#print(portfolio.cov_struct())
+print(pd.DataFrame(portfolio.cov_struct()[2003]))
+
+
+
+
+ 
