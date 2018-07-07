@@ -139,5 +139,10 @@ class Portfolio():
     	# (6x6) x 15 years not doable with simple assignment... keep dict?
     	return cov_dict #covariance_struct
 
+""" Rolling efficient frontiers... set a calibration window that is 352 days long
+    clibrate model on this window... plot frontiers continuously..
+    have them evolve smoothly"""
+
+    
 
 

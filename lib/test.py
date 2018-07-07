@@ -6,6 +6,16 @@ import numpy as np
 import pandas as pd
 from datetime import datetime as dt
 import timeit 
+import os, sys
+
+sys.path.append('/Users/jonnymorley/Documents/GitHub/Portfolio-Modeling/assets/')
+
+home = os.path.expanduser("~")
+sys.path.append(os.path.join(home,"Documents/Github/Portfolio-Modeling/"))
+sys.path.append(os.path.join(home,"Documents/Github/Portfolio-Modeling/assets/"))
+sys.path.append(home)
+
+
 """price_hist = port.load_daily_adj_close("VFINX_03_17.csv")
 
 print(price_hist.head())
@@ -171,6 +181,10 @@ print('\n\n\n\n')
 print(pd.DataFrame(portfolio.cov_struct()[2003]))
 
 
-
-
+"""
+"""
  
+print(portfolio.return_mean_struct)
+
+
+
