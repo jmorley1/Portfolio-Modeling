@@ -70,6 +70,7 @@ class Asset:
 
 class Portfolio():
     def __init__(self, *N_assets, ):
+        #begin model mean-variance calibration 
     	# first arg catches comma separated asset objects, 
         self.return_hist = pd.DataFrame([asset.return_hist['Arithmetic Return'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
@@ -139,9 +140,21 @@ class Portfolio():
     	# (6x6) x 15 years not doable with simple assignment... keep dict?
     	return cov_dict #covariance_struct
 
+# End model mean-variance calibration 
 """ Rolling efficient frontiers... set a calibration window that is 352 days long
     clibrate model on this window... plot frontiers continuously..
-    have them evolve smoothly"""
+    have them evolve smoothly
+
+    Consider PCA wieght analysis for model calibration 
+
+    assign higher weights for most recent quarter?
+
+    """
+
+
+    
+
+
 
     
 
