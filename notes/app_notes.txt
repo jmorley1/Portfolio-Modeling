@@ -60,3 +60,30 @@ NOTE:
 - USER MUST KNOW/INPUT THE YEARS FOR WHICH THE PRICE DATA IS TAKEN]
 		- THE __INIT__() ASSIGNMENT FOR PORTFOLIO CLASS'S YEARS ATTR LOOKS AT THE SET OF YEARS IN THE PRICE HISTORY 
 
+
+
+
+    	#covariance_struct = pd.DataFrame(cov_dict) # figure out how to put in data frame
+    	# (6x6) x 15 years not doable with simple assignment... keep dict?
+        #for year in self.years[1:]:
+
+# cov_dict[year] = pd.DataFrame(cov_dict[year], index=self.assets, columns=self.assets)
+# End model mean-variance calibration 
+""" Rolling efficient frontiers... set a calibration window that is 352 days long
+    clibrate model on this window... plot frontiers continuously..
+    have them evolve smoothly
+
+    Consider PCA wieght analysis for model calibration 
+
+    assign higher weights for most recent quarter?
+
+    """
+
+
+    
+
+
+
+
+
+    
