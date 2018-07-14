@@ -193,14 +193,46 @@ print(portfolio.cov_struct().keys())
 print(portfolio.corr_struct().keys())
 
 print(portfolio.corr_struct()[2003])
-
+"""
 print('\n\n\n\n\n\n')
 for year in portfolio.years[1:]:
 	print('Covariance struct for portfolio year: %f'% year)
-	print(portfolio.cov_struct()[year])
+	print(portfolio.covariance_struct[year])
+
+#print(type(portfolio.cov_struct()[2003]))
+
+#print('TEST1\n\n',portfolio.covariance_struct[2003])
+
+#print(np.portfolio.covariance_struct[2003].shape[0])
+
+#print(portfolio.min_volatility_alloc_struct())
+print(portfolio.covariance_struct[2003])
+"""
+
+a= portfolio.min_volatility_alloc_struct()
+print('\n\n\n\nminimum vol alloc:\n', a)
+
+print(portfolio.return_mean_struct)
+print(type(portfolio.return_mean_struct))
+
+print('TEEEEST\n',portfolio.covariance_struct.keys())
+
+print('\n\n Volatility struct: \n', portfolio.portfolio_volatility_struct())
+#print(np.sqrt(np.diag(portfolio.covariance_struct[2003])))
 
 
+print(np.sqrt(np.diag(portfolio.covariance_struct[2003])))
 
+#portfolio.plot_test_sigma_mu()
 
+print(portfolio.return_mean_struct.loc["VFINX",2003]["Return Mean"])
+print(portfolio.return_mean_struct.index.get_level_values(1))
 
+portfolio.plot_test_sigma_mu( 2003)
 
+#print('vol for 2003\n:',portfolio.portfolio_volatility_struct["VFINX"].loc[2003])
+
+#print(portfolio.return_mean_struct["VFINX",2003]["Return Mean"])
+#print(portfolio.return_mean_struct["VFINX"]["Return Mean"])
+print('\n\n\n AWGE')
+print(portfolio.return_mean_struct.loc['VFINX',2003]["Return Mean"], portfolio.portfolio_volatility_struct['VFINX'].loc[2003])

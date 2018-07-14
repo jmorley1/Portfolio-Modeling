@@ -3,11 +3,15 @@ import pandas as pd
 import numpy as  np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.gridspec as gridspec
 from datetime import datetime as dt
 from datetime import timedelta as td
 import warnings
 import copy
 import csv
+
+
+# <! -- ADD LOGIC TO HANDLE NON SEQUENTIAL CALCULATIONS OF INTERMEDIATE VALUES -->
 
 
 class Asset:
@@ -110,6 +114,7 @@ class Portfolio():
         	# in the return struct the zero day year should be deleted.
 
     def yearly_portfolio_struct(self):
+        # asset portfolio strucutre for return histories
     	portfolio_dict = {}
     	for year in self.years[1:]:
     		portfolio_for_year = []
@@ -150,6 +155,84 @@ class Portfolio():
         self.correlation_struct = copy.deepcopy(corr_dict)
         return corr_dict
 
+    # ======= ROAD TO THE FRONTIER =======
+    
+    def min_volatility_alloc_struct(self):#, cov_struct):
+        # will compute minimum volatility portfolio allocation 
+        # over all years considered or for a particular year?
+        #   might be wasting time if ultimately not plotting rolling forntiers
+        # whatev
+        #year_cov = self.covariance_struct[]
+        #y = np.linalg.solve()
+
+        # <! -- ADD LOGIC TO HANDLE NON SEQUENTIAL CALCULATIONS OF INTERMEDIATE VALUES -->
+        min_vol_dict = {}
+        for year in self.yearly_portfolio.index:
+            year_cov = self.covariance_struct[year]
+            y = np.linalg.solve(year_cov, np.ones((year_cov.shape[0],1)))
+            a = np.dot(np.ones((1,len(y))),y)
+            fmv = np.dot((1/a),y.T) # should be in the order of the assets passed in 
+            min_vol_dict[year] = np.ravel(fmv)
+        min_vol_alloc_list = []
+        for key in min_vol_dict:
+            temp = np.array(min_vol_dict[key])
+            min_vol_alloc_list.append(temp)
+        min_volatility_allocations = pd.DataFrame(min_vol_alloc_list, index=self.yearly_portfolio.index, columns = self.assets)
+        return min_volatility_allocations
+
+    def portfolio_volatility_struct(self):
+
+        vol_list = []
+        for key in self.covariance_struct.keys():
+            vol = np.sqrt(np.diag(self.covariance_struct[key]))
+            print(key,' ',vol)
+            vol_list.append(vol)
+        vol_list = np.array(vol_list)
+
+        portfolio_vol_struct = pd.DataFrame(vol_list, index=self.yearly_portfolio.index, columns = self.assets)
+        self.portfolio_volatility_struct = portfolio_vol_struct
+        return portfolio_vol_struct
+        
+    #==== PLOTTING AND SUPPORT =======
+
+    # this will plot asset mean and volatility in the sigma- Mu plane
+    #   - later make this more aware/dynamic, 
+    #           - should know if other plots are open and 
+    #             have opportunity to add to the existing plot
+    # is there a way to set a global fig that can be queried on the fly?
+
+    def plot_test_sigma_mu(self, year):
+        fig = plt.figure()
+        spec  = gridspec.GridSpec(ncols=1, nrows=1)
+        ax1 = fig.add_subplot(spec[0,0])
+
+        means = []; vols = [];
+        for asset in self.assets:
+            #for year in self.years[1:]:
+            #means.append(self.return_mean_struct.loc[asset,year]["Return Mean"])
+            #vols.append(self.portfolio_volatility_struct[asset].loc[year])
+            mean  = self.return_mean_struct.loc[asset,year]["Return Mean"]
+            vol   = self.portfolio_volatility_struct[asset].loc[year]
+            #plt.plot(means, vols, 'o')
+            plt.plot(mean, vol, 'o')
+            plt.annotate(asset, xy=(mean,vol))
+
+        #plt.annotate(asset, xy=zip(vols))
+        plt.title('Return means and Volatities in $\sigma-\mu$')
+        plt.ylabel('Return Mean $\mu$')
+        plt.xlabel('Volatility $\sigma$')
+        plt.grid()
+        plt.show()
+
+
+"""
+    
+    numAssest = len(self.assets)
+    numYears  = len(self.years[1:])
+    fig = plt.
+    fig, axes = plt.subplot(1,1)
+
+"""
 
     
 
