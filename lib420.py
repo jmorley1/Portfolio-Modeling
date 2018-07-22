@@ -9,7 +9,7 @@ from datetime import timedelta as td
 import warnings
 import copy
 import csv
-
+import cvxopt
 
 # <! -- ADD LOGIC TO HANDLE NON SEQUENTIAL CALCULATIONS OF INTERMEDIATE VALUES -->
 
@@ -170,6 +170,8 @@ class Portfolio():
         for year in self.yearly_portfolio.index:
             year_cov = self.covariance_struct[year]
             y = np.linalg.solve(year_cov, np.ones((year_cov.shape[0],1)))
+            print(y.shape)
+
             a = np.dot(np.ones((1,len(y))),y)
             fmv = np.dot((1/a),y.T) # should be in the order of the assets passed in 
             min_vol_dict[year] = np.ravel(fmv)
@@ -178,6 +180,8 @@ class Portfolio():
             temp = np.array(min_vol_dict[key])
             min_vol_alloc_list.append(temp)
         min_volatility_allocations = pd.DataFrame(min_vol_alloc_list, index=self.yearly_portfolio.index, columns = self.assets)
+        self.min_vol_allocs = min_volatility_allocations.copy()
+        self.min_vol_alloc_flag = True
         return min_volatility_allocations
 
     def portfolio_volatility_struct(self):
@@ -192,7 +196,87 @@ class Portfolio():
         portfolio_vol_struct = pd.DataFrame(vol_list, index=self.yearly_portfolio.index, columns = self.assets)
         self.portfolio_volatility_struct = portfolio_vol_struct
         return portfolio_vol_struct
-        
+
+    
+    def unlimited_frontier(self, year):
+        covar = self.covariance_struct[year]
+        m = []
+        for asset in self.assets:
+            m.append(self.return_mean_struct.loc[asset,year]["Return Mean"])
+        m = np.array(m)
+        y = np.ravel(np.linalg.solve(covar, np.ones((covar.shape[0],1))))
+        z = np.linalg.solve(covar, m)
+        a = np.dot(np.ones((1, len(y))),y)
+        b = np.dot(np.ones((1, len(z))),z)
+        c = np.dot(m.T, z)
+        mu = np.linspace(-5e-3, 5e-3, 10000)
+
+        sig = np.sqrt((1/a) + (a/(a*c - b**2))*(mu-(b/a))**2)
+        self.unlimited_sig = sig
+        self.unlimited_mu  = mu
+        self.unlimited_frontier_flag  = True # successful calculation.. add logic 
+        return (sig, mu)
+
+
+    def long_frontier(self, year):
+        covar = self.covariance_struct[year]
+        m = []
+        for asset in self.assets:
+            m.append(self.return_mean_struct.loc[asset,year]["Return Mean"])
+        m = np.array(m)
+        mn = np.min(m)
+        mx = np.max(m)
+
+        variances = np.diag(covar)
+        min_var   = np.min(variances)
+        max_var   = np.max(variances)
+
+        i = 1
+        mu = np.linspace(-5e-3, 5e-3, 10000)
+        sig = np.zeros((len(mu), 1))
+        #x = quadprog(C1, C2, C3, C4, C5, C6, C7, C8, ...)
+        for i in range(len(mu)):
+            C1 = covar
+            n  = C1.shape[1]
+            C2 = np.ravel(np.zeros((1,len(covar))))
+            C3 = -np.eye(len(covar))
+            C4 = np.ravel(np.zeros((1,len(covar))))#zeros(length(v),1).'
+            C5 = np.vstack((np.ones((1,len(covar))), [m.T])) #[ones(length(v),1).';m.']
+            C6 = np.array([[1], [mu[i]]])  #[1; mu(i)]
+            ######## TOOK THE TRANSPOSE OFF OF C6
+            P = C1
+            q = C2  #zeros(length(v),1).'
+            G = C3
+            h = C4
+            A = C5
+            b = C6
+
+            sol = cvxopt.solvers.qp(cvxopt.matrix(P.values), cvxopt.matrix(q), cvxopt.matrix(G), cvxopt.matrix(h), cvxopt.matrix(A), cvxopt.matrix(b), solver='glpk')
+            x = sol['x']
+            x = np.ravel(np.array(x))
+            sig[i] = np.sqrt(np.dot(np.dot(x.T,covar),x))
+        print('length of sig: %d, length of mu: %d'%(len(sig), len(mu)))
+        self.long_sig = sig
+        self.long_mu  = mu
+        self.long_front_flag = True
+        return (sig, mu) 
+
+
+    """
+        mu = mn:.00001:mx; 
+        sig  = zeros(length(mu),1);
+        for i=1:1:length(mu);
+        options = optimoptions('quadprog','Display','off');
+        f_lf = quadprog(v,zeros(length(v),1).',-eye(length(v)),zeros(length(v),1).',[ones(length(v),1).';m.'],[1; mu(i)],[],[],[],options);
+        sig(i) = sqrt(f_lf.'*v*f_lf);
+        in=+1;
+        end
+    """ 
+
+
+
+
+
     #==== PLOTTING AND SUPPORT =======
 
     # this will plot asset mean and volatility in the sigma- Mu plane
@@ -202,7 +286,9 @@ class Portfolio():
     # is there a way to set a global fig that can be queried on the fly?
 
     def plot_test_sigma_mu(self, year):
+
         fig = plt.figure()
+        
         spec  = gridspec.GridSpec(ncols=1, nrows=1)
         ax1 = fig.add_subplot(spec[0,0])
 
@@ -211,29 +297,32 @@ class Portfolio():
             #for year in self.years[1:]:
             #means.append(self.return_mean_struct.loc[asset,year]["Return Mean"])
             #vols.append(self.portfolio_volatility_struct[asset].loc[year])
-            mean  = self.return_mean_struct.loc[asset,year]["Return Mean"]
-            vol   = self.portfolio_volatility_struct[asset].loc[year]
+            mean = self.return_mean_struct.loc[asset,year]["Return Mean"]
+            vol = (self.portfolio_volatility_struct[asset].loc[year])
             #plt.plot(means, vols, 'o')
-            plt.plot(mean, vol, 'o')
-            plt.annotate(asset, xy=(mean,vol))
+            plt.plot(vol, mean, 'o')
+            plt.annotate(asset, xy=(vol,mean))
+
+        if self.unlimited_frontier_flag:
+            plt.plot(self.unlimited_sig, self.unlimited_mu)
+        #if self.long_front_flag:
+        #plt.plot(self.long_sig, self.long_mu)
+
+
+
 
         #plt.annotate(asset, xy=zip(vols))
-        plt.title('Return means and Volatities in $\sigma-\mu$')
+        plt.title('Return means and Volatities in $\sigma-\mu$:  %d'%year)
         plt.ylabel('Return Mean $\mu$')
         plt.xlabel('Volatility $\sigma$')
         plt.grid()
         plt.show()
+        return #(means, vols)
+    """
+    def plot_unlimited_frontier(self):
+        ax = plt.gca()
+        ax.plot(self.unlimited_sig, self.unlimited_mu)
 
-
-"""
-    
-    numAssest = len(self.assets)
-    numYears  = len(self.years[1:])
-    fig = plt.
-    fig, axes = plt.subplot(1,1)
-
-"""
-
-    
+    """
 
 

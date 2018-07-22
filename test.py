@@ -5,9 +5,11 @@ import lib420 as port
 import numpy as np
 import pandas as pd
 from datetime import datetime as dt
+import matplotlib.pyplot as plt
 import timeit 
 import os, sys
 import copy
+import cvxopt
 
 sys.path.append('/Users/jonnymorley/Documents/GitHub/Portfolio-Modeling/assets/')
 
@@ -32,86 +34,10 @@ VFSTX = port.Asset("VFSTX","VFSTX_03_17.csv")
 VFICX = port.Asset("VFICX","VFICX_03_17.csv")
 VWIGX = port.Asset("VWIGX","VWIGX_03_17.csv")
 
-#Data Format Check: VFINX.price_history_plot()
-#Data Format Check: print(VFINX.price_history.head())
-# Version 2 test:  return_func = VFINX.return_history([0,252])
-
-""" Speed tests for V1 and V2 of tested funcs
-start_time = timeit.default_timer()
-VFINX.return_history([0,len(VFINX.price_history)-1])
-elapsed = timeit.default_timer()-start_time
-print("time for my function: ",elapsed)
-
-start_time = timeit.default_timer()
-VFINX.price_history.pct_change()
-elapsed = timeit.default_timer()-start_time
-print("time for pandas function: ",elapsed)
-
-"""
-
-#print(VFINX.return_history().head())
-#print(VFINX.return_history().tail())
-
-#print(len(VFINX.return_history()))
-#VFINX.price_history_plot()
 
 
 portfolio = port.Portfolio(VFINX, VBTIX, VGSLX, VWIGX, VFICX, VFSTX)
 
-#print(portfolio.return_hist.shape) 
-
-#print("Portfolio return history")
-#print(portfolio.return_hist.head(),'\n')
-#print("Portfolio price history")
-#print(portfolio.price_hist.head())
-
-#print(len(portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]))
-
-#print(portfolio.price_hist_struct.head())
-
-#print(portfolio.return_mean_struct)
-#test = portfolio.return_hist
-#print(portfolio.return_hist["VFINX"][portfolio.return_hist["VFINX"].index])
-#print(portfolio.return_hist.index.year)
-'''
-
-price
-
-300 mionthly 
-3600 *3 years
-
-5000 painting
-
-
-~ 20,000 grand.. condition 
-
-tax deduct 18,000 taxes....__class__
-
-
-avg rate 5%....  5-3%...... 7 years... 
-
-560,0000
-
-'''
-
-
-#print(portfolio.return_hist_struct.loc["VFINX",2003]['Return History'].shape)
-
-#print(len(np.array([portfolio.return_hist_struct.loc[asset, year]['Return History'] for asset in portfolio.assets for year in portfolio.years[1:]])[0]))
-
-#print(portfolio.years)
-#print(len(portfolio.years))
-#print([portfolio.retunr_hist_struct])
-#print(len(portfolio.assets))
-
-#print(portfolio.years)
-#print(len(portfolio.years[1:]))
-"""
-yearly_portfolio = {}
-for asset in portfolio.assets:
-	for year in portfolio.years[1:]:
-		print(portfolio.return_hist_struct.loc[asset,year]['Return History'])
-"""
 yearly_portfolio = {}
 for year in portfolio.years[1:]:
 	port_arr = []
@@ -228,7 +154,7 @@ print(np.sqrt(np.diag(portfolio.covariance_struct[2003])))
 print(portfolio.return_mean_struct.loc["VFINX",2003]["Return Mean"])
 print(portfolio.return_mean_struct.index.get_level_values(1))
 
-portfolio.plot_test_sigma_mu( 2003)
+#portfolio.plot_test_sigma_mu(2005)
 
 #print('vol for 2003\n:',portfolio.portfolio_volatility_struct["VFINX"].loc[2003])
 
@@ -236,3 +162,85 @@ portfolio.plot_test_sigma_mu( 2003)
 #print(portfolio.return_mean_struct["VFINX"]["Return Mean"])
 print('\n\n\n AWGE')
 print(portfolio.return_mean_struct.loc['VFINX',2003]["Return Mean"], portfolio.portfolio_volatility_struct['VFINX'].loc[2003])
+
+print('Testing structure of Minimum Volatility Structure')
+print(portfolio.min_volatility_alloc_struct())
+#print(portfolio.min_vol_allocs)
+
+print(portfolio.return_mean_struct)
+print(portfolio.portfolio_volatility_struct)
+print(portfolio.covariance_struct[2003])
+
+
+"""
+sig, mu = portfolio.unlimited_frontier(2003)
+print('sizes', len(mu), len(sig))
+
+#def long_frontier(portfolio, year):
+covar = portfolio.covariance_struct[year]
+m = []
+for asset in portfolio.assets:
+	m.append(portfolio.return_mean_struct.loc[asset,year]["Return Mean"])
+m = np.array(m)
+mn = np.min(m)	
+mx = np.max(m)
+
+variances = np.diag(covar)
+min_var   = np.min(variances)
+max_var   = np.max(variances)
+
+i = 1
+mu = np.linspace(-5e-3, 5e-3, 10000)
+sig = np.zeros((len(mu), 1))
+#x = quadprog(C1, C2, C3, C4, C5, C6, C7, C8, ...)
+#for i in range(len(mu)):
+C1 = covar
+n  = C1.shape[1]
+C2 = np.ravel(np.zeros((1,len(covar))))
+C3 = -np.eye(len(covar))
+C4 = np.ravel(np.zeros((1,len(covar))))#zeros(length(v),1).'
+C5 = np.vstack((np.ones((1,len(covar))), [m.T])) #[ones(length(v),1).';m.']
+C6 = np.array([[1], [mu[i]]]) #[1; mu(i)]
+
+P = C1
+q = C2  #zeros(length(v),1).'
+G = C3
+h = C4
+A = C5
+b = C6
+
+print('P')
+print(P.values)
+print('q')
+print(q)
+print('G')
+print(G)
+sol = cvxopt.solvers.qp(cvxopt.matrix(P.values), cvxopt.matrix(q), cvxopt.matrix(G), cvxopt.matrix(h), cvxopt.matrix(A), cvxopt.matrix(b))
+x = sol['x']
+print('solution:',np.ravel(np.array(x)))
+print(type(x))
+"""
+sig, mu = portfolio.unlimited_frontier(2003)
+#sig, mu = portfolio.long_frontier( 2003)
+portfolio.plot_test_sigma_mu(2003)
+#print(cvxopt.matrix(P))
+
+
+
+"""
+year =2003
+covar = portfolio.covariance_struct[year]
+m = []
+for asset in portfolio.assets:
+	m.append(portfolio.return_mean_struct.loc[asset,year]["Return Mean"])
+m = np.array(m)
+print(np.vstack((np.ones((1,len(covar))), [m.T])))
+
+print(m.shape)
+
+
+print('\n\n\n AWGE')
+
+print(np.ravel(np.vstack(np.zeros((1,len(covar))))))
+"""
+#print(np.vstack(np.array([np.zeros((1,6)) , -np.eye(6), np.eye(6)])))
