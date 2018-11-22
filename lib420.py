@@ -19,13 +19,13 @@ import cvxopt
 class Asset:
     """An asset contains some info about a single security
 
-    Notes:
-        An asset is considered to have the following properties:
-            -A name
-            -A vector of historical price data
-
-        For convinience, the following is calculated on initialization
-            -Percent return history for each day
+    Attributes:
+        name:
+            String identifying the asset
+        price_hist:
+            Pandas series of historical price data
+        return_hist:
+            Pandas series of historical arithmetic daily return
     """
     def __init__(self, asset_name, price_hist):
         """Initialization of asset
@@ -41,10 +41,10 @@ class Asset:
         """Calculation of the arithmetic return history vector for an asset
 
         Args:  
-            price_hist : Price history vector length n
+            price_hist : Price history series length n
 
         Returns: 
-            return_hist: Arithmetic return history vector length n-1 #NOTE: It actually returns a DataFrame? @Jonny?
+            return_hist: Arithmetic return history series length n-1 
 
         Calculation:
                             s(d)
@@ -52,20 +52,86 @@ class Asset:
                         
                            s(d-1)
 
-            Where s(d) is the price of the asset on day d=1...n
-        
+            Where s(d) is the price of the asset on day d=0,1,...,n 
+            and r(d) is defined on d=1,2,...,n
         """        
         return_hist = self.price_hist.pct_change()[1:].copy();
-        return_hist = ['Arithmetic Return'] 
+        return_hist.columns = ['Arithmetic Return'] 
         return return_hist 
 
 class AssetGroup():
+    """Asset groups are a collection of assets and their statistical properties
+
+    Attributes:
+        assets:
+            Assets objects considered in this group.
+        return hist:
+            Pandas DataFrame created from combination of individual asset
+            return histories
+        price_hist:
+            DataFrame created from combination of individual asset
+            price histories
+        data_time:
+            Time between price measurements
+        stat_time:
+            Time considered in each statistical calculation, in units 
+            matching total_time. For example, considering security prices
+            over a single trading year:
+                                data_time = 1 day
+                                stat_time = 252 days
+        total_time:
+            Time covering all statistical calculations performed, in units
+             matching total_time. For example,considering the 
+             years 2003-2015 inclusive:
+                                data_time = 1 day
+                                stat_time = 252 days
+                                total_time = 252*13 = 3276 days
+        TODO: *_struct attributes? 
+
+    Methods:
+        yearly_portfolio_struct():
+            Args: 
+                TODO
+            Returns:
+                TODO
+        cov_struct:
+             Args: 
+                TODO
+            Returns:
+                TODO
+        cor_struct:
+             Args: 
+                TODO
+            Returns:
+                TODO
+        min_volatility_alloc_struct:
+            Args: 
+                TODO
+            Returns:
+                TODO
+        portfolio_volatility_struct:
+            Args: 
+                TODO
+            Returns:
+                TODO
+        unlimited_frontier:
+            Args: 
+                TODO
+            Returns:
+                TODO
+        long_frontier:
+            Args: 
+                TODO
+            Returns:
+                TODO
+    """
+
     def __init__(self, *N_assets, ):
-        #begin model mean-variance calibration 
-        # first arg catches comma separated asset objects, 
+        """Initialize asset group"""
         self.return_hist = pd.DataFrame([asset.return_hist['Arithmetic Return'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
                                         columns=N_assets[0].return_hist['Arithmetic Return'].index.values).T
+
         self.price_hist = pd.DataFrame([asset.price_hist['Adj Close'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
                                         columns=N_assets[0].price_hist['Adj Close'].index.values).T 
@@ -260,55 +326,5 @@ class AssetGroup():
     """ 
 
 
-
-
-
-    #==== PLOTTING AND SUPPORT =======
-
-    # this will plot asset mean and volatility in the sigma- Mu plane
-    #   - later make this more aware/dynamic, 
-    #           - should know if other plots are open and 
-    #             have opportunity to add to the existing plot
-    # is there a way to set a global fig that can be queried on the fly?
-
-    def plot_test_sigma_mu(self, year):
-
-        fig = plt.figure()
-        
-        spec  = gridspec.GridSpec(ncols=1, nrows=1)
-        ax1 = fig.add_subplot(spec[0,0])
-
-        means = []; vols = [];
-        for asset in self.assets:
-            #for year in self.years[1:]:
-            #means.append(self.return_mean_struct.loc[asset,year]["Return Mean"])
-            #vols.append(self.portfolio_volatility_struct[asset].loc[year])
-            mean = self.return_mean_struct.loc[asset,year]["Return Mean"]
-            vol = (self.portfolio_volatility_struct[asset].loc[year])
-            #plt.plot(means, vols, 'o')
-            plt.plot(vol, mean, 'o')
-            plt.annotate(asset, xy=(vol,mean))
-
-        if self.unlimited_frontier_flag:
-            plt.plot(self.unlimited_sig, self.unlimited_mu)
-        #if self.long_front_flag:
-        #plt.plot(self.long_sig, self.long_mu)
-
-
-
-
-        #plt.annotate(asset, xy=zip(vols))
-        plt.title('Return means and Volatities in $\sigma-\mu$:  %d'%year)
-        plt.ylabel('Return Mean $\mu$')
-        plt.xlabel('Volatility $\sigma$')
-        plt.grid()
-        plt.show()
-        return #(means, vols)
-    """
-    def plot_unlimited_frontier(self):
-        ax = plt.gca()
-        ax.plot(self.unlimited_sig, self.unlimited_mu)
-
-    """
 
 
