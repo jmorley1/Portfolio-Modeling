@@ -44,16 +44,6 @@ class Asset:
                     num_trading_days shape: [1 253; 254 505; ...]
             Output: Arithmetic return history  r(d) = [s(d)/s(d-1)]-1"""
         
-        # VERSION1: Older-slower code:
-        """span = np.arange(num_trading_days[0],num_trading_days[1]+1) # one extra for day 0
-        return_hist = np.ones(num_trading_days[1]-num_trading_days[0])
-        for i in range(len(return_hist)):
-        return_hist[i] = (self.price_history.iloc[span[i]+1] - self.price_history.iloc[span[i]])/ self.price_history.iloc[span[i]]
-        return pd.DataFrame(return_hist, columns=["Simple Return History"]) """
-        
-        # VERSION 2: Newer-Faster Code:  1600x faster
-        #return self.price_history[num_trading_days[0]:num_trading_days[1]+1].pct_change()
-
         #VERSION 3: Eliminates the num_trading_days arg to accommodate object slicing convention
         temp = self.price_hist.pct_change()[1:].copy(); #first value will be Nan b/c day zero
         temp.columns = ['Arithmetic Return']
@@ -73,7 +63,7 @@ class Asset:
         plt.show()
 
 
-class Portfolio():
+class AssetGroup():
     def __init__(self, *N_assets, ):
         #begin model mean-variance calibration 
     	# first arg catches comma separated asset objects, 
