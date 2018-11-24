@@ -31,10 +31,14 @@ class Asset:
         """Initialization of asset
 
         Args:
-            asset_name : Asset name (all caps, stock ticker/coin acronym)
+            asset_name: 
+                Asset name (all caps, stock ticker/coin acronym)
+            price_hist:
+                Pandas series containing datetime and price
+
         """
         self.name = asset_name
-        self.price_hist = price_list
+        self.price_hist = price_hist
         self.return_hist = self.return_history(price_hist)
 
     def return_history(self,  price_hist):
@@ -126,8 +130,22 @@ class AssetGroup():
                 TODO
     """
 
-    def __init__(self, *N_assets, ):
+    def __init__(self,data_time, stat_time, *N_assets):
+
+        # TODO: Use stat time and datetime object to programatically divide the data up into as many stat_time's as possible. 
+        # Since the original data HAS an associated datetime object, we don't need to pass it again here....stat_time
+        # should give us all we need. Maybe we want to assume the data is continuous, i.e. 2006 -> 2007 - 2008, no 2006->2008, 
+        # since this would not allow any 'overlap' in the extra time at end of a trading year some years.
+ 
+        # ^ Kind of hard to do since there can be a Saturday seperating the two and date_time suddenly looks like 2 days. Easier to just pass in...
+
         """Initialize asset group"""
+
+        ### Calculate time properties for this asset group ###
+        # Assuming all assets are the same, we can just look at the first:
+       
+        
+
         self.return_hist = pd.DataFrame([asset.return_hist['Arithmetic Return'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
                                         columns=N_assets[0].return_hist['Arithmetic Return'].index.values).T
@@ -165,10 +183,15 @@ class AssetGroup():
             # Drop the Nan columns for the year index with one input
             # in the return struct the zero day year should be deleted.
 
-    def yearly_portfolio_struct(self):
+        ### Calculate the base statistical properties ###
+        self.cov_struct()
+        self.cor_struct()
+        self.min_volatility_allocations()
+
+    def stat_time_struct(self):
         # asset portfolio strucutre for return histories
         portfolio_dict = {}
-        for year in self.years[1:]:
+        for stat_time in self.years[1:]:
             portfolio_for_year = []
             for asset in self.assets:
                 portfolio_for_year.append(self.return_hist_struct.loc[asset,year]['Return History'])
@@ -196,7 +219,7 @@ class AssetGroup():
         for year in self.yearly_portfolio.index:
             cov_dict[year] = pd.DataFrame(cov_dict[year], index=self.assets, columns=self.assets)
         self.covariance_struct = copy.deepcopy(cov_dict)
-        return cov_dict
+    
 
     def corr_struct(self):
         corr_dict={}
@@ -205,7 +228,7 @@ class AssetGroup():
         for year in self.yearly_portfolio.index:
             corr_dict[year] = pd.DataFrame(corr_dict[year], index=self.assets, columns=self.assets)
         self.correlation_struct = copy.deepcopy(corr_dict)
-        return corr_dict
+        
 
     # ======= ROAD TO THE FRONTIER =======
     
