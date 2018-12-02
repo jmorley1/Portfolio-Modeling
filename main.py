@@ -21,10 +21,8 @@ for assetname in asset_namelist:
 
 ### Create asset group with statistical data ###
 data_time = td(days=1)
-stat_time = td(days=252)
+stat_time = 252
 
 assetgroup1 = AssetGroup(data_time,stat_time,*asset_list)
-
-
 
 ### Plot ###
