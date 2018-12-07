@@ -1,4 +1,4 @@
-  def price_history_plot(self):
+def price_history_plot(self):
         """ TODO: make display better """
         #years    = mdates.YearLocator()
         #months   = mdates.MonthLocator()
@@ -19,7 +19,6 @@
 #           - should know if other plots are open and 
 #             have opportunity to add to the existing plot
 # is there a way to set a global fig that can be queried on the fly?
-
 def plot_test_sigma_mu(self, year):
 
     fig = plt.figure()

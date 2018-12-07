@@ -76,21 +76,6 @@ class AssetGroup():
         price_hist:
             DataFrame created from combination of individual asset
             price histories
-        data_time:
-            Time between price measurements
-        stat_time:
-            Time considered in each statistical calculation, in units 
-            matching total_time. For example, considering security prices
-            over a single trading year:
-                                data_time = 1 day
-                                stat_time = 252 days
-        total_time:
-            Time covering all statistical calculations performed, in units
-             matching total_time. For example,considering the 
-             years 2003-2015 inclusive:
-                                data_time = 1 day
-                                stat_time = 252 days
-                                total_time = 252*13 = 3276 days
         TODO: *_struct attributes? 
 
     Methods:
@@ -131,148 +116,65 @@ class AssetGroup():
                 TODO
     """
 
-    def __init__(self,data_time, stat_time, *N_assets):\
+    def __init__(self, *N_assets):
 
 
-        #My own attempt at this....
-
+       
+       
         
         self.assetnames  = [asset.name for asset in N_assets]
 
-        self.return_hist_df = pd.DataFrame([asset.return_hist['Arithmetic Return'].values for asset in  N_assets],
+        self.return_hist = pd.DataFrame([asset.return_hist['Arithmetic Return'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
                                         columns=N_assets[0].return_hist['Arithmetic Return'].index.values).T
 
-        self.price_hist_df = pd.DataFrame([asset.price_hist['Adj Close'].values for asset in  N_assets],
+        self.price_hist = pd.DataFrame([asset.price_hist['Adj Close'].values for asset in  N_assets],
                                         index=[asset.name for asset in N_assets],
                                         columns=N_assets[0].price_hist['Adj Close'].index.values).T 
-            
-        # Start time
-        start_time = N_assets[0].price_hist.index[0]
-        # The total time is the time between the first and last price measurements:
-        total_time = data_time*len(N_assets[0].price_hist)
-        # How many stat time periods can we fit?  
-        total_stat_times = round(total_time / td(stat_time))
-        # Find the return history for each stat time and put into a numpy array
- 
-
-        ### TODO: Major cleanup / better method ###
-
-        # Create a 1x(num assets * total stat times) series in the form..
-        # [VBTIX year 1, VBTIX year 2, VBTIX year 3.....VBTIX year n, VFINX year 1, VFINX year 2,....etc] for all assets and years
-        returns_partitioned_by_stattime = [ self.return_hist_df.iloc[cs*stat_time:(cs+1)*stat_time][asset].values for asset in self.assetnames for cs in range(total_stat_times)]
-        # From this list, create a dataframe that can be indexed via [VBTIX,4] etc
-        self.return_hist_struct =  pd.DataFrame(np.asarray(returns_partitioned_by_stattime),
-                                        index = pd.MultiIndex.from_tuples([(asset,cs) for asset in self.assetnames for cs in range(total_stat_times)]),
-                                        columns=["Return History"])
-        
-        # print(self.return_hist_struct)
-        # print(self.return_hist_struct["VFINX",2])
+        self.years = sorted(list(set([self.price_hist.index[i].year for i in range(len(self.price_hist))])))
+        self.assets  = [asset.name for asset in N_assets]
+        self.return_hist_struct =  pd.DataFrame([[ self.return_hist[asset][ self.return_hist.index.year == year].values] for asset in self.assets for year in self.years ],
+                                        index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
+                                        columns=["Return History"],
+                                        dtype='float64').sort_index(level=0)
             # returns dtype: "object"... must unpack when referencing an asset and year by ["Return History"]
-            # EX: portfolio.return_hist_struct.loc`["VFINX",2003]["Return History"]
-            # Needed b/c trading days per year may be different.. will get Nan or error.. skipping catch for now
+            # EX: portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]
+            # Needed b/c trading days per year may be different.. wi ll get Nan or error.. skipping catch for now
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        # TODO: Use stat time and datetime object to programatically divide the data up into as many stat_time's as possible. 
-        # Since the original data HAS an associated datetime object, we don't need to pass it again here....stat_time
-        # should give us all we need. Maybe we want to assume the data is continuous, i.e. 2006 -> 2007 - 2008, no 2006->2008, 
-        # since this would not allow any 'overlap' in the extra time at end of a trading year some years.
- 
-        # ^ Kind of hard to do since there can be a Saturday seperating the two and date_time suddenly looks like 2 days. Easier to just pass in...
-
-
-        ### Calculate time properties for this asset group ###
-        # Assuming all assets are the same, we can just look at the first:
-       
+        self.price_hist_struct =  pd.DataFrame([[ self.price_hist[asset][ self.price_hist.index.year == year].values] for asset in self.assets for year in self.years ],
+                                        index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
+                                        columns=["Price History"],
+                                        dtype='float64').sort_index(level=0)
+            #EX: portfolio.price_hist_struct.loc["VINFX",2003]["Price History"]
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.return_mean_struct = pd.DataFrame([[ np.mean(self.return_hist[asset][ self.return_hist.index.year == year].values)] for asset in self.assets for year in self.years ],
+                                        index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
+                                        columns=["Return Mean"],
+                                        dtype='float64').dropna().sort_index(level=0)
+            # Run time warning b/c 
+            # /anaconda3/lib/python3.6/site-packages/numpy/core/_methods.py:80: RuntimeWarning: invalid value encountered in double_scalars
+            # ret = ret.dtype.type(ret / rcount)
+            # /anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2957: 
+            # RuntimeWarning: Mean of empty slice. out=out, **kwargs)
         
+            # Drop the Nan columns for the year index with one input
+            # in the return struct the zero day year should be deleted.
 
-        # self.return_hist = pd.DataFrame([asset.return_hist['Arithmetic Return'].values for asset in  N_assets],
-        #                                 index=[asset.name for asset in N_assets],
-        #                                 columns=N_assets[0].return_hist['Arithmetic Return'].index.values).T
 
-        # self.price_hist = pd.DataFrame([asset.price_hist['Adj Close'].values for asset in  N_assets],
-        #                                 index=[asset.name for asset in N_assets],
-        #                                 columns=N_assets[0].price_hist['Adj Close'].index.values).T 
-        # self.years = sorted(list(set([self.price_hist.index[i].year for i in range(len(self.price_hist))])))
-        # self.assets  = [asset.name for asset in N_assets]
-        # self.return_hist_struct =  pd.DataFrame([[ self.return_hist[asset][ self.return_hist.index.year == year].values] for asset in self.assets for year in self.years ],
-        #                                 index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
-        #                                 columns=["Return History"],
-        #                                 dtype='float64').sort_index(level=0)
-        #     # returns dtype: "object"... must unpack when referencing an asset and year by ["Return History"]
-        #     # EX: portfolio.return_hist_struct.loc["VFINX",2003]["Return History"]
-        #     # Needed b/c trading days per year may be different.. will get Nan or error.. skipping catch for now
-
-        # self.price_hist_struct =  pd.DataFrame([[ self.price_hist[asset][ self.price_hist.index.year == year].values] for asset in self.assets for year in self.years ],
-        #                                 index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
-        #                                 columns=["Price History"],
-        #                                 dtype='float64').sort_index(level=0)
-        #     #EX: portfolio.price_hist_struct.loc["VINFX",2003]["Price History"]
-        # with warnings.catch_warnings():
-        #     warnings.simplefilter("ignore")
-        #     self.return_mean_struct = pd.DataFrame([[ np.mean(self.return_hist[asset][ self.return_hist.index.year == year].values)] for asset in self.assets for year in self.years ],
-        #                                 index = pd.MultiIndex.from_tuples([(asset,year) for asset in self.assets for year in self.years]),
-        #                                 columns=["Return Mean"],
-        #                                 dtype='float64').dropna().sort_index(level=0)
-        #     # Run time warning b/c 
-        #     # /anaconda3/lib/python3.6/site-packages/numpy/core/_methods.py:80: RuntimeWarning: invalid value encountered in double_scalars
-        #     # ret = ret.dtype.type(ret / rcount)
-        #     # /anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2957: 
-        #     # RuntimeWarning: Mean of empty slice. out=out, **kwargs)
-        
-        #     # Drop the Nan columns for the year index with one input
-        #     # in the return struct the zero day year should be deleted.
 
         # ### Calculate the base statistical properties ###z
-        # self.cov_struct()
-        # self.cor_struct()
-        # self.min_volatility_allocations()
+        self.yearly_portfolio_struct()
+        self.cov_struct()
+        self.corr_struct()
+        self.min_volatility_alloc_struct()
 
-    def stat_time_struct(self):
+        
+
+    def yearly_portfolio_struct(self):
         # asset portfolio strucutre for return histories
         portfolio_dict = {}
-        for stat_time in self.years[1:]:
+        for year in self.years[1:]:
             portfolio_for_year = []
             for asset in self.assets:
                 portfolio_for_year.append(self.return_hist_struct.loc[asset,year]['Return History'])
@@ -326,7 +228,6 @@ class AssetGroup():
         for year in self.yearly_portfolio.index:
             year_cov = self.covariance_struct[year]
             y = np.linalg.solve(year_cov, np.ones((year_cov.shape[0],1)))
-            print(y.shape)
 
             a = np.dot(np.ones((1,len(y))),y)
             fmv = np.dot((1/a),y.T) # should be in the order of the assets passed in 

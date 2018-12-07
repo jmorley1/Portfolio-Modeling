@@ -7,7 +7,7 @@ from lib420 import Asset
 from lib420 import AssetGroup
 
 import lib420io as io
-
+import lib420plot as pl
 from datetime import timedelta as td
 from datetime import datetime as dt
 
@@ -19,10 +19,9 @@ for assetname in asset_namelist:
         current_asset = Asset(assetname,io.load_daily_adj_close("Tests/"+assetname+"_03_17.csv"))
         asset_list.append(current_asset)
 
-### Create asset group with statistical data ###
-data_time = td(days=1)
-stat_time = 252
+### Plot some data about the group of assets ###
 
-assetgroup1 = AssetGroup(data_time,stat_time,*asset_list)
-
-### Plot ###
+# I think this would be a good way to use an asset group. Thoughts?
+assetgroup1 = AssetGroup(*asset_list)
+(unlim_sig,unlim_mu) = assetgroup1.unlimited_frontier(2003)
+# l.plot_test_sigma_mu(unlim_sig,unlim_mu)
