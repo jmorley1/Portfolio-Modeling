@@ -1,3 +1,7 @@
+# Helper plotter functions were moved here but not usable from here.
+# Moving plot_test_Sigma_mu back to lib420 just to test for now. (going to bed, dont wanna do it right, rn)
+
+
 def price_history_plot(self):
         """ TODO: make display better """
         #years    = mdates.YearLocator()
